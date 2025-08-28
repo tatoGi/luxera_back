@@ -17,13 +17,19 @@ class RegisterController extends Controller
         
         try {
             $request->validate([
-                'first_name' => 'required|string|max:255',
+                'fullname' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:web_users',
                 'password' => 'required|string|min:8|confirmed',
             ]);
 
+            // Split fullname into first name and surname
+            $nameParts = explode(' ', trim($request->fullname), 2);
+            $firstName = $nameParts[0];
+            $surname = $nameParts[1] ?? ''; // In case only one name is provided
+
             $user = WebUser::create([
-                'first_name' => $request->first_name,
+                'first_name' => $firstName,
+                'surname' => $surname,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
             ]);

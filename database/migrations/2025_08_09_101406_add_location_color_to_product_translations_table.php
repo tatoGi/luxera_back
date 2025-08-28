@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('product_translations', function (Blueprint $table) {
-            $table->string('location')->nullable()->after('brand');
-            $table->string('color')->nullable()->after('location');
+            $table->string('location')->nullable();
+            $table->string('color')->nullable();
         });
     }
 
