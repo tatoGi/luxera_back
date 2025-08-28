@@ -9,7 +9,6 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('web.logout');
 
-Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register-show');
 Route::post('/register', [RegisterController::class, 'register']);
 
 // Protect profile routes with auth:webuser to ensure an authenticated WebUser instance
