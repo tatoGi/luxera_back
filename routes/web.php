@@ -8,6 +8,9 @@ use App\Http\Controllers\Website\wishlistController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
+
+// Test routes
+require __DIR__.'/test.php';
 /*
 |--------------------------------------------------------------------------
 | Web Routes
