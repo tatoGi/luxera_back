@@ -22,24 +22,24 @@ class RegisterController extends Controller
                 'password' => 'required|string|min:8|confirmed',
             ]);
 
-            // Split fullname into first name and surname
-            $nameParts = explode(' ', trim($request->fullname), 2);
-            $firstName = $nameParts[0];
-            $surname = $nameParts[1] ?? ''; // In case only one name is provided
-
             $user = WebUser::create([
-                'first_name' => $firstName,
-                'surname' => $surname,
+                'fullname' => $request->fullname,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
             ]);
 
+            // Log the user in via web guard
             Auth::guard('webuser')->login($user);
+            
+            // Create a new token for API authentication
+            $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
                 'success' => true,
                 'message' => 'User registered successfully',
                 'user' => $user,
+                'access_token' => $token,
+                'token_type' => 'Bearer',
                 'redirect' => '/'
             ], 201);
 
