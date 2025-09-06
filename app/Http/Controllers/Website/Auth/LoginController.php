@@ -19,10 +19,17 @@ class LoginController extends Controller
 
         if (Auth::guard('webuser')->attempt($credentials)) {
             // Authentication passed...
+            $user = Auth::guard('webuser')->user();
+            
+            // Create a new token for the user
+            $token = $user->createToken('auth_token')->plainTextToken;
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful',
-                'user' => Auth::guard('webuser')->user()
+                'user' => $user,
+                'token' => $token,
+                'token_type' => 'Bearer'
             ], 200);
         }
 

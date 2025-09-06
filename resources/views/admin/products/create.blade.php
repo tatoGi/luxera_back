@@ -10,7 +10,7 @@
                     action="{{ isset($page) ? route('admin.pages.products.store', ['locale' => app()->getLocale(), 'page' => $page->id]) : route('products.store', app()->getlocale()) }}"
                     method="POST" enctype="multipart/form-data" data-parsley-validate novalidate>
                     @csrf
-                    @if(isset($page))
+                    @if (isset($page))
                         <input type="hidden" name="page_id" value="{{ $page->id }}">
                     @endif
                     <div class="w-1/2 relative bg-white mt-2 mb-2 rounded-md p-4 mx-auto">
@@ -107,26 +107,6 @@
 
 
 
-                                    <div class="flex w-fulls items-center justify-center flex-col mb-2">
-
-                                        <label for="slug_{{ $locale }}" class="text-sm font-medium"><span
-                                                class="text-red-500">*</span>URL Keyword
-
-                                            ({{ __('admin.locale_' . $locale) }})
-                                        </label>
-
-                                        <input type="text" name="{{ $locale }}[slug]"
-                                            id="slug_{{ $locale }}"
-                                            class="border w-full text-sm rounded-lg block  p-2.5 @error('slug') border-red-500 @enderror"
-                                            placeholder="URL Keyword">
-
-                                        @error('slug')
-                                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                                        @enderror
-
-                                    </div>
-
-
 
                                     <div class="flex w-full items-center justify-center flex-col mb-2">
                                         <label for="slug_{{ $locale }}"
@@ -160,75 +140,9 @@
                                         </div>
                                     </div>
 
-                                    <div class="flex w-full items-center justify-center flex-col mb-2">
-                                        <label for="brand_{{ $locale }}" class="text-sm font-medium">
-                                            Brand ({{ __('admin.locale_' . $locale) }})
-                                        </label>
-                                        <input type="text" id="brand_{{ $locale }}"
-                                            name="{{ $locale }}[brand]" value="{{ old($locale . '.brand') }}"
-                                            class="border w-full text-sm rounded-lg block p-2.5 @error('style') border-red-500 @enderror"
-                                            placeholder="e.g., Modern, Classic, Rustic">
-                                        @error($locale . '.style')
-                                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-
-                                    <div class="flex w-full items-center justify-center flex-col mb-2">
-                                        <label for="location_{{ $locale }}" class="text-sm font-medium">
-                                            Location ({{ __('admin.locale_' . $locale) }})
-                                        </label>
-                                        <input type="text" id="location_{{ $locale }}"
-                                            name="{{ $locale }}[location]" value="{{ old($locale . '.location') }}"
-                                            class="border w-full text-sm rounded-lg block p-2.5 @error($locale . '.location') border-red-500 @enderror"
-                                            placeholder="e.g., Warehouse A, Shelf 12">
-                                        @error($locale . '.location')
-                                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-
-                                    <div class="flex w-full items-center justify-center flex-col mb-2">
-                                        <label for="color_{{ $locale }}" class="text-sm font-medium">
-                                            Color ({{ __('admin.locale_' . $locale) }})
-                                        </label>
-                                        <input type="text" id="color_{{ $locale }}"
-                                            name="{{ $locale }}[color]" value="{{ old($locale . '.color') }}"
-                                            class="border w-full text-sm rounded-lg block p-2.5 @error($locale . '.color') border-red-500 @enderror"
-                                            placeholder="e.g., Red, Blue, Black">
-                                        @error($locale . '.color')
-                                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-
                                 </div>
                             @endforeach
 
-                        </div>
-
-                        <!-- Product Identify ID -->
-                        <div class="mb-4">
-                            <label for="product_identify_id" class="block font-medium text-gray-700">
-                                Product Identify ID
-                                <span class="text-sm text-gray-500">(Auto-generated if empty)</span>
-                            </label>
-                            <input type="text" name="product_identify_id" id="product_identify_id"
-                                class="border-gray-300 py-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border rounded-md shadow-sm p-2 @error('product_identify_id') border-red-500 @enderror"
-                                value="{{ old('product_identify_id') }}" placeholder="e.g., PROD-ABC123">
-                            @error('product_identify_id')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <!-- Features: Size (Color and Location are now translatable) -->
-                        <div class="mb-4">
-                            <div>
-                                <label for="size" class="block font-medium text-gray-700">Size</label>
-                                <input type="text" name="size" id="size"
-                                    class="border-gray-300 py-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border rounded-md shadow-sm p-2 @error('size') border-red-500 @enderror"
-                                    value="{{ old('size') }}" placeholder="e.g., S, M, L, XL">
-                                @error('size')
-                                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-                            </div>
                         </div>
 
                         <!-- Price and Sort Order -->

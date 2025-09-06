@@ -17,10 +17,6 @@ class ProductTranslation extends Model
         'title',
         'slug',
         'description',
-        'brand', 
-        'location',
-        'color',
-        'warranty_period'
     ];
 
     // Disable timestamps
