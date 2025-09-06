@@ -27,7 +27,7 @@ class CreateCategoryRequest extends FormRequest
             // Base attributes
             'parent_id' => 'nullable|exists:categories,id',
             'active' => 'nullable|boolean',
-            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ];
 
         // Validation rules for translatable attributes
