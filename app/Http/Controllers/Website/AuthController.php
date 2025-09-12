@@ -19,44 +19,36 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'email' => 'nullable|email',
-            'phone_number' => 'nullable|string',
             'password' => 'required|string|min:6',
         ]);
-
-        if (empty($data['email']) && empty($data['phone_number'])) {
+    
+        if (empty($data['email'])) {
             return response()->json([
                 'message' => 'Email or phone_number is required.',
             ], 422);
         }
-
-        // For now, support email login (WebUser has no phone_number field yet)
-        if (!empty($data['phone_number'])) {
-            return response()->json([
-                'message' => 'Phone login not supported yet. Please use email.',
-            ], 422);
-        }
-
+    
         $user = WebUser::where('email', $data['email'] ?? '')->first();
+    
         if (!$user || !Hash::check($data['password'], $user->password)) {
             return response()->json([
                 'message' => 'Invalid credentials.',
             ], 401);
         }
-
+    
         // Log the user in using the webuser guard (session-based)
         Auth::guard('webuser')->login($user, true);
         $request->session()->regenerate();
-
-        // Optional token for frontend localStorage (not used by backend auth here)
-        $token = Str::random(60);
-
+    
+        // Create Sanctum token for API authentication
+        $token = $user->createToken('auth-token')->plainTextToken;
+    
         return response()->json([
             'message' => 'Logged in successfully.',
             'token' => $token,
             'user' => [
                 'id' => $user->id,
-                'first_name' => $user->first_name,
-                'surname' => $user->surname,
+                'fullname' => $user->fullname,
                 'email' => $user->email,
             ],
         ]);
@@ -85,27 +77,4 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * GET /me - returns the authenticated web user
-     */
-    public function me(Request $request)
-    {
-        $user = $request->user();
-        if (!$user) {
-            return response()->json([
-                'message' => 'Unauthenticated.',
-            ], 401);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $user->id,
-                'first_name' => $user->first_name,
-                'surname' => $user->surname,
-                'email' => $user->email,
-                'fullname' => $user->fullname,
-            ],
-        ]);
-    }
 }

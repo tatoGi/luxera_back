@@ -1,17 +1,17 @@
 <?php
 
-use App\Http\Controllers\Website\Auth\GoogleAuthController;
-use App\Http\Controllers\Website\Auth\LoginController;
+use App\Http\Controllers\Website\Auth\GoogleAuthController; 
 use App\Http\Controllers\Website\Auth\RegisterController;
+use App\Http\Controllers\Website\AuthController;
 use App\Http\Controllers\Website\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Google OAuth routes
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirectToGoogle'])->name('auth.google.redirect');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
-Route::post('/logout', [LoginController::class, 'logout'])->name('web.logout');
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('web.logout');
 
 Route::post('/register', [RegisterController::class, 'register']);
 

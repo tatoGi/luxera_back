@@ -17,6 +17,7 @@ class VerifyCsrfToken extends Middleware
         '*/register',
         '*/login',
         '*/logout',
+        '*/me',
         '*/add-to-cart',
         '*/remove-from-cart',
         '*/add-to-wishlist',

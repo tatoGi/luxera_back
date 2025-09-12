@@ -81,7 +81,6 @@ class ProfileController extends Controller
 
     public function me(Request $request)
     {
-
         // Get authenticated user via Sanctum (token-based)
         $user = $request->user();
         
@@ -96,17 +95,13 @@ class ProfileController extends Controller
             'success' => true,
             'data' => [
                 'id' => $user->id,
-                'first_name' => $user->first_name,
-                'surname' => $user->surname,
+                'fullname' => $user->fullname,
                 'email' => $user->email,
                 'email_verified' => $user->hasVerifiedEmail(),
                 'phone' => $user->phone,
                 'personal_id' => $user->personal_id,
                 'birth_date' => $user->birth_date?->toDateString(),
                 'gender' => $user->gender,
-                'is_retailer' => $user->is_retailer,
-                'retailer_status' => $user->retailer_status,
-                'retailer_requested_at' => $user->retailer_requested_at?->toISOString(),
                 'avatar' => $user->avatar,
                 'avatar_url' => $user->avatar ? asset('storage/' . $user->avatar) : null,
                 'email_verified_at' => $user->email_verified_at?->toISOString(),
