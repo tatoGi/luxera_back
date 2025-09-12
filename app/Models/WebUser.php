@@ -22,6 +22,7 @@ class WebUser extends Authenticatable implements MustVerifyEmail
     protected $fillable = [
         'fullname',
         'email',
+        'google_id',
         'password',
         'phone',
         'avatar',

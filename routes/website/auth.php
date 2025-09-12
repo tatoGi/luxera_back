@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\Website\Auth\GoogleAuthController;
 use App\Http\Controllers\Website\Auth\LoginController;
 use App\Http\Controllers\Website\Auth\RegisterController;
 use App\Http\Controllers\Website\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+// Google OAuth routes
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirectToGoogle'])->name('auth.google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('web.logout');
@@ -19,7 +23,7 @@ Route::middleware('auth:webuser')->group(function () {
 
 // JSON profile routes for SPA usage
 Route::middleware('auth:webuser')->group(function () {
-    Route::get('/profile/me', [ProfileController::class, 'me'])->name('profile.me');
+    Route::get('/me', [ProfileController::class, 'me'])->name('profile.me');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update.json');
     Route::post('/profile/retailer-request', [ProfileController::class, 'requestRetailer'])->name('profile.retailer.request');
     Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.avatar');

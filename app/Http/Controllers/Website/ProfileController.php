@@ -89,8 +89,7 @@ class ProfileController extends Controller
         return response()->json([
             'data' => [
                 'id' => $user->id,
-                'first_name' => $user->first_name,
-                'surname' => $user->surname,
+                'fullname' => $user->fullname,
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'personal_id' => $user->personal_id,
@@ -101,6 +100,7 @@ class ProfileController extends Controller
                 'retailer_requested_at' => $user->retailer_requested_at,
                 'avatar' => $user->avatar,
                 'avatar_url' => $user->avatar ? asset('storage/' . $user->avatar) : null,
+                'google_id' => $user->google_id,
             ],
         ]);
     }
