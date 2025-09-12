@@ -81,7 +81,7 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        $user = Auth::guard('webuser')->user();
+        $user = $request->user();
         if (!$user) {
             return response()->json([
                 'message' => 'Unauthenticated.',

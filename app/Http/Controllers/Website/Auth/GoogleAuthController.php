@@ -40,9 +40,20 @@ class GoogleAuthController extends Controller
                     ]);
                 }
                 
-                // Log the user in
-                Auth::guard('webuser')->login($existingUser);
+                // Create Sanctum token
+                $token = $existingUser->createToken('google-auth')->plainTextToken;
                 
+                // Return JSON response with token for API usage
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'user' => $existingUser,
+                        'token' => $token,
+                        'message' => 'Successfully logged in with Google!'
+                    ]);
+                }
+                
+                // For web usage, log the user in
+                Auth::guard('webuser')->login($existingUser);
                 return redirect()->intended('/dashboard')->with('success', 'Successfully logged in with Google!');
             }
             
@@ -56,9 +67,20 @@ class GoogleAuthController extends Controller
                 'email_verified_at' => now(), // Google emails are pre-verified
             ]);
             
-            // Log the new user in
-            Auth::guard('webuser')->login($newUser);
+            // Create Sanctum token
+            $token = $newUser->createToken('google-auth')->plainTextToken;
             
+            // Return JSON response with token for API usage
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'user' => $newUser,
+                    'token' => $token,
+                    'message' => 'Account created and logged in successfully!'
+                ]);
+            }
+            
+            // For web usage, log the user in
+            Auth::guard('webuser')->login($newUser);
             return redirect()->intended('/dashboard')->with('success', 'Account created and logged in successfully!');
             
         } catch (\Exception $e) {

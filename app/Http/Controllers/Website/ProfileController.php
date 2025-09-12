@@ -81,7 +81,8 @@ class ProfileController extends Controller
 
     public function me(Request $request)
     {
-        $user = Auth::guard('webuser')->user();
+        $user = $request->user();
+        
         if (!$user instanceof WebUser) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
