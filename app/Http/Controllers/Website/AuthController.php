@@ -67,6 +67,15 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        // For API routes with Sanctum tokens
+        if ($request->user()) {
+            $request->user()->currentAccessToken()->delete();
+            return response()->json([
+                'message' => 'Logged out successfully.',
+            ]);
+        }
+
+        // For web routes with sessions
         Auth::guard('webuser')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -89,11 +98,13 @@ class AuthController extends Controller
         }
 
         return response()->json([
+            'success' => true,
             'data' => [
                 'id' => $user->id,
                 'first_name' => $user->first_name,
                 'surname' => $user->surname,
                 'email' => $user->email,
+                'fullname' => $user->fullname,
             ],
         ]);
     }
