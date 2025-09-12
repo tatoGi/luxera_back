@@ -81,32 +81,40 @@ class ProfileController extends Controller
 
     public function me(Request $request)
     {
-    
+
+        // Get authenticated user via Sanctum (token-based)
         $user = $request->user();
-
-        if (!$user instanceof WebUser) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'user not found.',
+            ], 401);
         }
-
+        
         return response()->json([
+            'success' => true,
             'data' => [
                 'id' => $user->id,
-                'fullname' => $user->fullname,
+                'first_name' => $user->first_name,
+                'surname' => $user->surname,
                 'email' => $user->email,
+                'email_verified' => $user->hasVerifiedEmail(),
                 'phone' => $user->phone,
                 'personal_id' => $user->personal_id,
                 'birth_date' => $user->birth_date?->toDateString(),
                 'gender' => $user->gender,
                 'is_retailer' => $user->is_retailer,
                 'retailer_status' => $user->retailer_status,
-                'retailer_requested_at' => $user->retailer_requested_at,
+                'retailer_requested_at' => $user->retailer_requested_at?->toISOString(),
                 'avatar' => $user->avatar,
                 'avatar_url' => $user->avatar ? asset('storage/' . $user->avatar) : null,
-                'google_id' => $user->google_id,
-            ],
+                'email_verified_at' => $user->email_verified_at?->toISOString(),
+                'created_at' => $user->created_at?->toISOString(),
+                'updated_at' => $user->updated_at?->toISOString(),
+            ]
         ]);
     }
-
     /**
      * POST /profile/retailer-request
      * Marks the user's retailer status as pending and sets requested_at.
