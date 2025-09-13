@@ -7,6 +7,7 @@ use App\Models\WebUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -63,17 +64,38 @@ class GoogleAuthController extends Controller
             // Set the application locale for this request
             app()->setLocale($locale);
             
-            // Get the redirect URI from session or build it
-            $redirectUri = session('oauth_redirect_uri') ?? 
-                url('/' . $locale . '/auth/google/callback');
+            // Use the redirect URI from config
+            $redirectUri = config('services.google.redirect');
             
-            // Configure the redirect URI for Socialite
-            config(['services.google.redirect' => $redirectUri]);
+            // If no redirect URI in config, use a default one
+            if (empty($redirectUri)) {
+                $redirectUri = url('/auth/google/callback');
+                config(['services.google.redirect' => $redirectUri]);
+            }
+            
+            // For local development, ensure we're using the correct URL
+            if (app()->environment('local')) {
+                $redirectUri = str_replace(
+                    ['https://api.luxeragift.com', 'http://localhost'], 
+                    'http://127.0.0.1:8000', 
+                    $redirectUri
+                );
+                config(['services.google.redirect' => $redirectUri]);
+            }
             
             // Get the Google user
             $googleUser = Socialite::driver('google')->user();
             
-            // Clear the session
+            // Log successful authentication
+            \Log::info('Google User Data:', [
+                'id' => $googleUser->getId(),
+                'name' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'redirect_uri' => $redirectUri,
+                'config_redirect' => config('services.google.redirect')
+            ]);
+            
+            // Clear any existing session data
             $request->session()->forget('oauth_redirect_uri');
             
             // Check if user already exists with this email
@@ -82,6 +104,59 @@ class GoogleAuthController extends Controller
             if ($existingUser) {
                 // Update Google ID if not set
                 if (!$existingUser->google_id) {
+                    $existingUser->update([
+                        'google_id' => $googleUser->getId(),
+                        'avatar' => $googleUser->getAvatar(),
+                    ]);
+                }
+                
+                // Log the user in
+                Auth::guard('webuser')->login($existingUser);
+                
+                // Create a token for the frontend
+                $token = $existingUser->createToken('auth-token')->plainTextToken;
+                
+                // Redirect to frontend with token
+                $frontendUrl = rtrim(env('FRONTEND_URL', 'https://luxeragift.netlify.app'), '/');
+                $redirectUrl = "{$frontendUrl}/auth/callback?token={$token}&user_id={$existingUser->id}";
+                
+                return redirect($redirectUrl);
+            }
+            
+            // Create new user
+            $newUser = WebUser::create([
+                'fullname' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'google_id' => $googleUser->getId(),
+                'avatar' => $googleUser->getAvatar(),
+                'password' => Hash::make(Str::random(24)),
+                'email_verified_at' => now(),
+            ]);
+            
+            // Log the new user in
+            Auth::guard('webuser')->login($newUser);
+            
+            // Create token for frontend
+            $token = $newUser->createToken('auth-token')->plainTextToken;
+            
+            // Redirect to frontend with token
+            $frontendUrl = rtrim(env('FRONTEND_URL', 'https://luxeragift.netlify.app'), '/');
+            $redirectUrl = "{$frontendUrl}/auth/callback?token={$token}&user_id={$newUser->id}";
+            
+            return redirect($redirectUrl);
+            
+        } catch (\Exception $e) {
+            // Log detailed error information
+            \Log::error('Google OAuth Error:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'request' => $request->all()
+            ]);
+            
+            return redirect('/login')
+                ->with('error', 'Failed to authenticate with Google: ' . $e->getMessage());
+        }
                     $existingUser->update([
                         'google_id' => $googleUser->getId(),
                         'avatar' => $googleUser->getAvatar(),
@@ -103,10 +178,14 @@ class GoogleAuthController extends Controller
                 // For web usage, log the user in
                 Auth::guard('webuser')->login($existingUser);
                 
-                // Redirect to dashboard with the same locale
-                $locale = app()->getLocale();
-                return redirect()->intended("/{$locale}/dashboard")
-                    ->with('success', __('Successfully logged in with Google!'));
+                // Create a token for the frontend
+                $token = $existingUser->createToken('auth-token')->plainTextToken;
+                
+                // Redirect to frontend with token
+                $frontendUrl = rtrim(env('FRONTEND_URL', 'https://luxeragift.netlify.app'), '/');
+                $redirectUrl = "{$frontendUrl}/auth/callback?token={$token}&user_id={$existingUser->id}";
+                
+                return redirect($redirectUrl);
             }
             
             // Create new user
@@ -118,22 +197,18 @@ class GoogleAuthController extends Controller
                 'password' => Hash::make(Str::random(24)), // Random password since they'll use Google
                 'email_verified_at' => now(), // Google emails are pre-verified
             ]);
-            
-            // Create Sanctum token
-            $token = $newUser->createToken('google-auth')->plainTextToken;
-            
-            // Return JSON response with token for API usage
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'user' => $newUser,
-                    'token' => $token,
-                    'message' => 'Account created and logged in successfully!'
-                ]);
-            }
-            
-            // For web usage, log the user in
+
+            // Log the new user in
             Auth::guard('webuser')->login($newUser);
-            return redirect()->intended('/dashboard')->with('success', 'Account created and logged in successfully!');
+
+            // Create token for frontend
+            $token = $newUser->createToken('auth-token')->plainTextToken;
+
+            // Redirect to frontend with token
+            $frontendUrl = rtrim(env('FRONTEND_URL', 'https://luxeragift.netlify.app'), '/');
+            $redirectUrl = "{$frontendUrl}/auth/callback?token={$token}&user_id={$newUser->id}";
+            
+            return redirect($redirectUrl)->with('success', 'Account created and logged in successfully!');
             
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'Something went wrong with Google authentication. Please try again.');
