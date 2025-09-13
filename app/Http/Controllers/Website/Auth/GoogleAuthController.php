@@ -20,37 +20,61 @@ class GoogleAuthController extends Controller
         // Get current locale or default to 'ka' (Georgian)
         $locale = app()->getLocale() ?? 'ka';
         
-        // Build the redirect URL manually to ensure proper formatting
+        // Build the base URL
         $baseUrl = rtrim(env('APP_URL', 'http://localhost:8000'), '/');
         
-        // Ensure the URL has a protocol but not duplicated
-        if (strpos($baseUrl, 'http') !== 0) {
-            $baseUrl = 'https://' . ltrim($baseUrl, '/');
+        // Ensure the URL has a proper protocol (https in production)
+        if (app()->environment('production')) {
+            $baseUrl = 'https://' . ltrim(preg_replace('#^https?://#', '', $baseUrl), '/');
+        } elseif (strpos($baseUrl, 'http') !== 0) {
+            $baseUrl = 'http://' . ltrim($baseUrl, '/');
         }
         
-        // Remove any existing locale from the URL to prevent duplication
+        // Clean up the base URL and build the redirect URI
         $baseUrl = preg_replace('#/\w{2}(?=/|$)#', '', $baseUrl);
+        $redirectUri = $baseUrl . '/' . $locale . '/auth/google/callback';
         
-        // Set the redirect URL with the correct locale
-        config(['services.google.redirect' => $baseUrl . '/' . $locale . '/auth/google/callback']);
+        // Store the redirect URI in the session
+        session(['oauth_redirect_uri' => $redirectUri]);
         
-        return Socialite::driver('google')->redirect();
+        // Build the Google OAuth URL manually
+        $query = http_build_query([
+            'client_id' => config('services.google.client_id'),
+            'redirect_uri' => $redirectUri,
+            'response_type' => 'code',
+            'scope' => 'openid profile email',
+            'access_type' => 'offline',
+            'prompt' => 'consent',
+            'state' => $locale,
+        ]);
+        
+        return redirect('https://accounts.google.com/o/oauth2/v2/auth?' . $query);
     }
 
     /**
      * Obtain the user information from Google.
      */
-    public function handleGoogleCallback()
+    public function handleGoogleCallback(Request $request)
     {
         try {
-            // Get the locale from the URL or default to 'ka'
-            $locale = request()->segment(1) ?? 'ka';
+            // Get the locale from state parameter or URL or default to 'ka'
+            $locale = $request->state ?? request()->segment(1) ?? 'ka';
             
             // Set the application locale for this request
             app()->setLocale($locale);
             
+            // Get the redirect URI from session or build it
+            $redirectUri = session('oauth_redirect_uri') ?? 
+                url('/' . $locale . '/auth/google/callback');
+            
+            // Configure the redirect URI for Socialite
+            config(['services.google.redirect' => $redirectUri]);
+            
             // Get the Google user
             $googleUser = Socialite::driver('google')->user();
+            
+            // Clear the session
+            $request->session()->forget('oauth_redirect_uri');
             
             // Check if user already exists with this email
             $existingUser = WebUser::where('email', $googleUser->getEmail())->first();
