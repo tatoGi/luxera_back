@@ -17,37 +17,15 @@ class GoogleAuthController extends Controller
      */
     public function redirectToGoogle()
     {
-        // Get current locale or default to 'en'
-        $locale = app()->getLocale() ?? 'en';
-        
-        // Configure the redirect with locale
-        $config = config('services.google');
-        
-        // Add locale parameters to the redirect URL
-        $query = http_build_query([
-            'client_id' => $config['client_id'],
-            'redirect_uri' => $config['redirect'],
-            'response_type' => 'code',
-            'scope' => 'openid profile email',
-            'access_type' => 'offline',
-            'prompt' => 'consent',
-            'hl' => $locale,
-            'locale' => $locale
-        ]);
-        
-        return redirect()->to('https://accounts.google.com/o/oauth2/v2/auth?' . $query);
+        return Socialite::driver('google')->redirect();
     }
 
     /**
      * Obtain the user information from Google.
      */
-    public function handleGoogleCallback(Request $request)
+    public function handleGoogleCallback()
     {
         try {
-            if (!$request->has('code')) {
-                return response()->json(['error' => 'Authorization code not found'], 400);
-            }
-            
             $googleUser = Socialite::driver('google')->user();
             
             // Check if user already exists with this email
@@ -59,24 +37,24 @@ class GoogleAuthController extends Controller
                     $existingUser->update([
                         'google_id' => $googleUser->getId(),
                         'avatar' => $googleUser->getAvatar(),
-                        'email_verified_at' => now(), // Mark email as verified
                     ]);
                 }
                 
                 // Create Sanctum token
                 $token = $existingUser->createToken('google-auth')->plainTextToken;
                 
-                // Return JSON response for API usage
-                if ($request->expectsJson()) {
+                // Return JSON response with token for API usage
+                if (request()->expectsJson()) {
                     return response()->json([
                         'user' => $existingUser,
                         'token' => $token,
+                        'message' => 'Successfully logged in with Google!'
                     ]);
                 }
                 
-                // For web, log in the user
-                Auth::guard('web')->login($existingUser);
-                return redirect()->intended('/');
+                // For web usage, log the user in
+                Auth::guard('webuser')->login($existingUser);
+                return redirect()->intended('/dashboard')->with('success', 'Successfully logged in with Google!');
             }
             
             // Create new user
