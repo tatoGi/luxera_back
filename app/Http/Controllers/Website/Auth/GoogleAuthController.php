@@ -17,6 +17,23 @@ class GoogleAuthController extends Controller
      */
     public function redirectToGoogle()
     {
+        // Get current locale or default to 'ka' (Georgian)
+        $locale = app()->getLocale() ?? 'ka';
+        
+        // Build the redirect URL manually to ensure proper formatting
+        $baseUrl = rtrim(env('APP_URL', 'http://localhost:8000'), '/');
+        
+        // Ensure the URL has a protocol but not duplicated
+        if (strpos($baseUrl, 'http') !== 0) {
+            $baseUrl = 'https://' . ltrim($baseUrl, '/');
+        }
+        
+        // Remove any existing locale from the URL to prevent duplication
+        $baseUrl = preg_replace('#/\w{2}(?=/|$)#', '', $baseUrl);
+        
+        // Set the redirect URL with the correct locale
+        config(['services.google.redirect' => $baseUrl . '/' . $locale . '/auth/google/callback']);
+        
         return Socialite::driver('google')->redirect();
     }
 
@@ -26,6 +43,13 @@ class GoogleAuthController extends Controller
     public function handleGoogleCallback()
     {
         try {
+            // Get the locale from the URL or default to 'ka'
+            $locale = request()->segment(1) ?? 'ka';
+            
+            // Set the application locale for this request
+            app()->setLocale($locale);
+            
+            // Get the Google user
             $googleUser = Socialite::driver('google')->user();
             
             // Check if user already exists with this email
@@ -54,7 +78,11 @@ class GoogleAuthController extends Controller
                 
                 // For web usage, log the user in
                 Auth::guard('webuser')->login($existingUser);
-                return redirect()->intended('/dashboard')->with('success', 'Successfully logged in with Google!');
+                
+                // Redirect to dashboard with the same locale
+                $locale = app()->getLocale();
+                return redirect()->intended("/{$locale}/dashboard")
+                    ->with('success', __('Successfully logged in with Google!'));
             }
             
             // Create new user

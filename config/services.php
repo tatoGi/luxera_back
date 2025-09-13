@@ -32,7 +32,17 @@ return [
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('APP_URL') . '/' . app()->getLocale() . '/auth/google/callback',
+        'redirect' => function() {
+            $baseUrl = rtrim(env('APP_URL', 'http://localhost:8000'), '/');
+            $locale = app()->getLocale();
+            // Ensure the URL has a protocol but not duplicated
+            if (strpos($baseUrl, 'http') !== 0) {
+                $baseUrl = 'https://' . ltrim($baseUrl, '/');
+            }
+            // Remove any existing locale from the URL to prevent duplication
+            $baseUrl = preg_replace('#/\w{2}(?=/|$)#', '', $baseUrl);
+            return $baseUrl . '/' . $locale . '/auth/google/callback';
+        },
     ],
 
 ];
