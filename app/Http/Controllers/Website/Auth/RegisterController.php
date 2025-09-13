@@ -20,6 +20,7 @@ class RegisterController extends Controller
                 'fullname' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:web_users',
                 'password' => 'required|string|min:8|confirmed',
+                'password_confirmation' => 'required|string|same:password',
             ]);
 
             $user = WebUser::create([
