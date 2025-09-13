@@ -32,7 +32,14 @@ return [
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('APP_URL') . '/auth/google/callback',
+        'redirect' => function() {
+            $url = rtrim(env('APP_URL', 'http://localhost:8000'), '/');
+            // Ensure the URL has a protocol
+            if (!preg_match('~^https?://~i', $url)) {
+                $url = 'https://' . ltrim($url, '/');
+            }
+            return $url . '/auth/google/callback';
+        },
     ],
 
 ];
