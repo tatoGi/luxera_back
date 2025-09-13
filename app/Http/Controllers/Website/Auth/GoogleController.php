@@ -77,7 +77,19 @@ class GoogleController extends Controller
      */
     protected function findOrCreateUser($googleUser)
     {
-        $user = WebUser::where('email', $googleUser->email)->first();
+        // First try to find user by google_id
+        $user = WebUser::where('google_id', $googleUser->id)->first();
+        
+        // If not found, try to find by email
+        if (!$user && $googleUser->email) {
+            $user = WebUser::where('email', $googleUser->email)->first();
+            
+            // If user exists but doesn't have google_id, update it
+            if ($user) {
+                $user->google_id = $googleUser->id;
+                $user->save();
+            }
+        }
         
         if ($user) {
             // Update existing user
@@ -88,15 +100,28 @@ class GoogleController extends Controller
             return $user;
         }
         
-        // Create new user
-        return WebUser::create([
-            'name' => $googleUser->name,
-            'email' => $googleUser->email,
-            'password' => Hash::make(Str::random(24)),
-            'google_id' => $googleUser->id,
+        if (!$user) {
+            $user = WebUser::create([
+                'fullname' => $googleUser->name,
+                'email' => $googleUser->email,
+                'google_id' => $googleUser->id,
+                'password' => Hash::make(Str::random(24)),
+                'email_verified_at' => now(),
+            ]);
+            
+            Log::info('New user created via Google OAuth', [
+                'id' => $user->id,
+                'email' => $user->email,
+                'google_id' => $user->google_id
+            ]);
+        }
+        
+        $user->update([
             'avatar' => $googleUser->avatar,
             'email_verified_at' => now(),
         ]);
+        
+        return $user;
     }
     
     /**
