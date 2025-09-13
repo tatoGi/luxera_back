@@ -52,14 +52,15 @@ class GoogleController extends Controller
             
             // Redirect to frontend with token
             $frontendUrl = rtrim(env('FRONTEND_URL', 'https://luxeragift.netlify.app'), '/');
-            return redirect(
-                $frontendUrl . "/auth/callback?" . http_build_query([
-                    'token' => $token,
-                    'user_id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                ])
-            );
+            $redirectUrl = "$frontendUrl/en/auth/callback?" . http_build_query([
+                'token' => $token,
+                'user_id' => $user->id,
+                'name' => $user->fullname,
+                'email' => $user->email,
+            ]);
+            
+            Log::info('Redirecting to frontend', ['url' => $redirectUrl]);
+            return redirect($redirectUrl);
             
         } catch (\Exception $e) {
             Log::error('Google OAuth Error: ' . $e->getMessage(), [
