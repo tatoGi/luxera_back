@@ -20,7 +20,8 @@ class BannerController extends Controller
 
     public function index()
     {
-        $banners = Banner::with('pages')->paginate(5);
+        // Eager-load images to avoid N+1 when falling back to first image in the view
+        $banners = Banner::with(['pages', 'images'])->paginate(5);
 
         return view('admin.banners.index', compact('banners'));
     }

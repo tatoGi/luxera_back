@@ -29,10 +29,15 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($banners as $banner)
+                    
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if($banner->thumb)
                                 <img src="{{ asset('storage/' . $banner->thumb) }}"
+                                     alt="{{ $banner->title }}"
+                                     class="w-12 h-12 rounded-lg object-cover mx-auto">
+                            @elseif($banner->images && $banner->images->count() > 0)
+                                <img src="{{ asset('storage/' . $banner->images->first()->image_name) }}"
                                      alt="{{ $banner->title }}"
                                      class="w-12 h-12 rounded-lg object-cover mx-auto">
                             @else

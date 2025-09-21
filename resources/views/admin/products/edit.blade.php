@@ -70,6 +70,31 @@
                                 </select>
                             </div>
                         </div>
+
+                        <!-- VIP / Best Selling / Featured switches -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                            <div class="flex flex-col">
+                                <label class="text-sm mb-2 font-medium">VIP</label>
+                                <label class="relative inline-flex cursor-pointer items-center">
+                                    <input type="checkbox" class="peer sr-only" name="is_vip" value="1" {{ old('is_vip', $product->is_vip ?? 0) ? 'checked' : '' }} />
+                                    <div class="peer h-6 w-12 rounded-full border bg-slate-200 after:absolute after:left-[2px] after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-cyan-500 after:transition-all after:content-[''] peer-checked:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                                </label>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-sm mb-2 font-medium">Best Selling</label>
+                                <label class="relative inline-flex cursor-pointer items-center">
+                                    <input type="checkbox" class="peer sr-only" name="is_best_selling" value="1" {{ old('is_best_selling', $product->is_best_selling ?? 0) ? 'checked' : '' }} />
+                                    <div class="peer h-6 w-12 rounded-full border bg-slate-200 after:absolute after:left-[2px] after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-cyan-500 after:transition-all after:content-[''] peer-checked:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                                </label>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-sm mb-2 font-medium">Featured</label>
+                                <label class="relative inline-flex cursor-pointer items-center">
+                                    <input type="checkbox" class="peer sr-only" name="is_featured" value="1" {{ old('is_featured', $product->is_featured ?? 0) ? 'checked' : '' }} />
+                                    <div class="peer h-6 w-12 rounded-full border bg-slate-200 after:absolute after:left-[2px] after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-cyan-500 after:transition-all after:content-[''] peer-checked:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Translatable Content -->

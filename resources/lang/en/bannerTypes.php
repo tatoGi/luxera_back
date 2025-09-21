@@ -2,5 +2,6 @@
 
 return [
     'mainbanner' => 'Main Banners',
-    'staticbanner' => 'Static Banners'
+    'staticbanner' => 'Static Banners',
+    'SellProductBanner' => 'Sell Product Banners',
 ];

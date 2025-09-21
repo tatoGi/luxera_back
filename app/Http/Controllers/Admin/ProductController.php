@@ -58,6 +58,10 @@ class ProductController extends Controller
 
         // Handle active status
         $data['active'] = $request->has('active') ? 1 : 0;
+        // Handle flags
+        $data['is_vip'] = $request->has('is_vip') ? 1 : 0;
+        $data['is_best_selling'] = $request->has('is_best_selling') ? 1 : 0;
+        $data['is_featured'] = $request->has('is_featured') ? 1 : 0;
 
         // Generate unique product identify ID if not provided
         if (empty($data['product_identify_id'])) {
@@ -149,6 +153,10 @@ class ProductController extends Controller
 
         // Handle active status
         $data['active'] = $request->has('active') ? 1 : 0;
+        // Handle flags
+        $data['is_vip'] = $request->has('is_vip') ? 1 : 0;
+        $data['is_best_selling'] = $request->has('is_best_selling') ? 1 : 0;
+        $data['is_featured'] = $request->has('is_featured') ? 1 : 0;
 
         // Format slugs to ensure they're URL-friendly
         foreach (config('app.locales') as $locale) {
@@ -161,7 +169,10 @@ class ProductController extends Controller
         $product->update([
             'category_id' => $data['category_id'] ?? null,
             'price' => $data['price'],
-            'active' => $data['active']
+            'active' => $data['active'],
+            'is_vip' => $data['is_vip'],
+            'is_best_selling' => $data['is_best_selling'],
+            'is_featured' => $data['is_featured'],
         ]);
 
         // Update translations for each locale

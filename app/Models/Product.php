@@ -18,6 +18,9 @@ class Product extends Model implements TranslatableContract
         'price',
         'active',
         'sort_order',
+        'is_vip',
+        'is_best_selling',
+        'is_featured',
     ];
 
     public $translatedAttributes = ['title', 'slug', 'description'];

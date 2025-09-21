@@ -11,6 +11,86 @@ use App\Models\Post;
 
 class FrontendService
 {
+    public function getNavigationData()
+    {
+        $locale = app()->getLocale();
+
+        $pages = Page::whereHas('translations', function ($query) use ($locale) {
+            $query->where('active', 1)
+                  ->where('locale', $locale);
+        })->with(['translations' => function ($query) use ($locale) {
+            $query->select('page_id', 'title', 'slug', 'locale')
+                  ->where('active', 1)
+                  ->where('locale', $locale);
+        }])
+            ->get(['id']);
+
+        return $pages->map(function ($page) use ($locale) {
+            $t = $page->translations->firstWhere('locale', $locale);
+            return [
+                'title' => $t->title ?? null,
+                'slug'  => $t->slug ?? null,
+            ];
+        })->filter(function ($item) {
+            return !empty($item['title']) && !empty($item['slug']);
+        })->values()->all();
+    }
+    public function getHomepageData()
+    {
+        $locale = app()->getLocale();
+
+        $baseQuery = Product::query()
+            ->where('active', 1)
+            ->with(['translations' => function ($q) use ($locale) {
+                $q->where('locale', $locale);
+            }, 'images'])
+            ->orderByDesc('sort_order')
+            ->orderByDesc('created_at');
+
+        $vipProducts = (clone $baseQuery)
+            ->where('is_vip', 1)
+            ->take(12)
+            ->get();
+
+        $featuredProducts = (clone $baseQuery)
+            ->where('is_featured', 1)
+            ->take(12)
+            ->get();
+
+        $bestSellingProducts = (clone $baseQuery)
+            ->where('is_best_selling', 1)
+            ->take(12)
+            ->get();
+
+        // Banners for homepage
+        $mainBannerTypeId = data_get(config('bannerTypes.mainbanner'), 'id');
+        $sellProductBannerTypeId = data_get(config('bannerTypes.sellProductBanner'), 'id');
+
+        $bannerBase = Banner::query()
+            ->with([
+                'images',
+                'translations' => function ($q) use ($locale) {
+                    $q->where('locale', $locale);
+                },
+            ])
+            ->orderByDesc('created_at');
+
+        $mainBanners = $mainBannerTypeId
+            ? (clone $bannerBase)->where('type_id', $mainBannerTypeId)->get()
+            : collect();
+
+        $sellProductBanners = $sellProductBannerTypeId
+            ? (clone $bannerBase)->where('type_id', $sellProductBannerTypeId)->get()
+            : collect();
+
+        return [
+            'vipProducts' => $vipProducts,
+            'featuredProducts' => $featuredProducts,
+            'bestSellingProducts' => $bestSellingProducts,
+            'mainBanners' => $mainBanners,
+            'sellProductBanners' => $sellProductBanners,
+        ];
+    }
     /**
      * Get all active pages with their translations
      *
@@ -199,77 +279,6 @@ class FrontendService
             ->with('category')
             ->take(4)
             ->get();
-    }
-
-    /**
-     * Get section data by slug
-     *
-     * @param string $slug
-     * @return array
-     */
-    public function getSectionData($slug)
-    {
-        $section = Page::with('translations')
-            ->whereHas('translations', function ($query) use ($slug) {
-                $query->where('slug', $slug);
-            })
-            ->firstOrFail();
-
-        $products = Product::where('active', '1')
-            ->with('category')
-            ->with('translations')
-            ->with('images')
-            ->paginate(10);
-
-        $categories = $products->pluck('category')->filter()->unique();
-        $categoryIds = $products->pluck('category.id');
-        $blogpage = Page::where('type_id', 2)->first();
-        $blogPosts = Post::where('page_id', $blogpage->id)
-            ->where('active', '1')
-            ->orderBy('sort_order', 'asc')
-            ->orderBy('published_at', 'desc')
-            ->with('translations')
-            ->with('attributes')
-            ->paginate(10);
-        return [
-            'section' => $section,
-            'categories' => $categories,
-            'categoryIds' => $categoryIds,
-            'products' => $products,
-            'blogPosts' => $blogPosts,
-            'slug' => $slug,
-            'breadcrumbs' => $this->generateBreadcrumbs($section)
-        ];
-    }
-
-    /**
-     * Generate breadcrumbs for a section
-     *
-     * @param Section $section
-     * @return array
-     */
-    /**
-     * Get homepage data
-     *
-     * @return array
-     */
-    public function getHomePageData()
-    {
-        $products = Product::where('active', '1')
-            ->with('translations')
-            ->with('category')
-            ->get();
-
-        $mainBanner = Banner::whereHas('translations')
-            ->where('type_id', 1)
-            ->orderBy('created_at', 'desc')
-            ->get();
-        $blogpage = Page::where('type_id', 2)->first();
-        return [
-            'mainBanner' => $mainBanner,
-            'categories' => $products->pluck('category')->unique(),
-            'products' => $products,
-        ];
     }
 
     /**

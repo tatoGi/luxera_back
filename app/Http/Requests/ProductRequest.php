@@ -31,6 +31,9 @@ class ProductRequest extends FormRequest
             'price' => 'required|numeric|min:0',
             'sort_order' => 'nullable|integer|min:0',
             'active' => 'nullable|boolean',
+            'is_vip' => 'nullable|boolean',
+            'is_best_selling' => 'nullable|boolean',
+            'is_featured' => 'nullable|boolean',
             'images' => 'nullable|array',
             'images.*' => 'file|mimes:jpg,jpeg,png,webp|max:2048',
         ];
