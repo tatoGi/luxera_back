@@ -182,8 +182,6 @@ class ProductController extends Controller
                 $translation->title = $data[$locale]['title'] ?? '';
                 $translation->slug = $data[$locale]['slug'] ?? '';
                 $translation->description = $data[$locale]['description'] ?? '';
-                $translation->location = $data[$locale]['location'] ?? null;
-                $translation->color = $data[$locale]['color'] ?? null;
                 $translation->save();
             }
         }
