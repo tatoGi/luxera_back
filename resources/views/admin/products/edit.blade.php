@@ -154,12 +154,6 @@
                                         @enderror
                                     </div>
 
-                                               placeholder="e.g., Red, Blue, Black">
-                                        @error($locale . '.color')
-                                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-
                                     <!-- Description -->
                                     <div>
                                         <label for="{{ $locale }}_description" class="block text-sm font-medium text-gray-700 mb-2">
