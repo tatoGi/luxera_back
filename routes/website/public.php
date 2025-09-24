@@ -40,7 +40,7 @@ Route::get('/clear-optimization', function () {
     return 'Optimization cache cleared!';
 });
 Route::get('/navigation', [FrontendController::class, 'navigation']);
-// Keep catch-all route at the end
+    // Keep catch-all route at the end
 Route::get('/{slug}', [FrontendController::class, 'index'])->where('slug', '.*');
 
 // Basket/wishlist/cart routes
