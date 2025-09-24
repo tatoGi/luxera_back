@@ -15,10 +15,11 @@ Route::post('/contact-submit', [FrontendController::class, 'submitContactForm'])
 Route::get('/sitemap', [SitemapController::class, 'generate']);
 Route::get('/pro/{url}', [FrontendController::class, 'show'])->name('single_product');
 Route::post('/subscribe', [FrontendController::class, 'subscribe'])->name('subscribe');
-Route::get('/navigation', [FrontendController::class, 'navigation'])->name('website.navigation')->middleware('cors');
+Route::get('/navigation', [FrontendController::class, 'navigation'])->name('website.navigation');
+Route::get('/categories', [FrontendController::class, 'categories']);
 Route::get('/pages', [FrontendController::class, 'pages']);
 Route::get('/pages-with-posts', [FrontendController::class, 'pagesWithPaginatedPosts'])->name('pages.with.posts');
-Route::get('/categories', [FrontendController::class, 'categories'])->middleware('cors');
+
 Route::post('/locale/sync', [FrontendController::class, 'localeSync'])->name('locale.sync');
 Route::get('/languages', [FrontendController::class, 'languages'])->name('api.languages');
 Route::post('/auth/send-welcome-email', [FrontendController::class, 'sendWelcomeEmail'])
@@ -39,7 +40,6 @@ Route::get('/clear-optimization', function () {
     Artisan::call('optimize:clear');
     return 'Optimization cache cleared!';
 });
-Route::get('/navigation', [FrontendController::class, 'navigation']);
     // Keep catch-all route at the end
 Route::get('/{slug}', [FrontendController::class, 'index'])->where('slug', '.*');
 
