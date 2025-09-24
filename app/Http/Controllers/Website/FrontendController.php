@@ -25,6 +25,16 @@ class FrontendController extends Controller
     {
         $this->frontendService = $frontendService;
     }
+    public function index($slug = null)
+    {
+        if (empty($slug)) {
+            return $this->homepage();
+        }
+
+        $data = $this->frontendService->getSectionData($slug);
+
+        return response()->json($data);
+    }
     public function homepageData()
     {
         $data = $this->frontendService->getHomepageData();

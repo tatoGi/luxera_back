@@ -11,6 +11,41 @@ use App\Models\Post;
 
 class FrontendService
 {
+    public function getSectionData($slug)
+    {
+        $section = Page::with('translations')
+            ->whereHas('translations', function ($query) use ($slug) {
+                $query->where('slug', $slug);
+            })
+            ->firstOrFail();
+
+        $products = Product::where('active', '1')
+            ->with('category')
+            ->with('translations')
+            ->with('images')
+            ->paginate(10);
+
+        $categories = $products->pluck('category')->filter()->unique();
+        $categoryIds = $products->pluck('category.id');
+        $blogpage = Page::where('type_id', 2)->first();
+        $blogPosts = Post::where('page_id', $blogpage->id)
+            ->where('active', '1')
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('published_at', 'desc')
+            ->with('translations')
+            ->with('attributes')
+            ->paginate(10);
+
+        return [
+            'section' => $section,
+            'categories' => $categories,
+            'categoryIds' => $categoryIds,
+            'products' => $products,
+            'blogPosts' => $blogPosts,
+            'slug' => $slug,
+            'breadcrumbs' => $this->generateBreadcrumbs($section),
+        ];
+    }
     public function getNavigationData()
     {
         $locale = app()->getLocale();
